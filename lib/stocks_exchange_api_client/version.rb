@@ -1,3 +1,3 @@
 module StocksExchangeApiClient
-  VERSION = '0.1.2'
+  VERSION = '2.0.0'
 end
