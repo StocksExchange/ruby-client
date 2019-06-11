@@ -56,7 +56,7 @@ module StocksExchangeApiClient
           'amount' => amount,
           'address' => address
         }
-        params['additional_address'] = additional_address unless additional_address.nil?
+        params['additional_address_parameter'] = additional_address unless additional_address.nil?
         StocksExchangeApiClient.make_api_request_v3(url, params, :post)
       end
 
