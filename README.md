@@ -12,7 +12,6 @@ STEX (former Stocks.Exchange) provides all the core exchange functionality, and 
 ## General
 The base URL for all the requests other than public methods is 
 ```
-https://app.stocks.exchange/api2
 https://app.stex.com/api2
 https://api3.stex.com
 ```
