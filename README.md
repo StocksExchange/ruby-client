@@ -130,6 +130,22 @@ end
 
 puts StocksExchangeApiClient::PrivateApiV3.profile_info
 ```
+### Example V3 Server-To-Server integrations
+```ruby
+StocksExchangeApiClient.configure do |conf|
+  conf.use_version = 3
+  conf.s2s = true
+  conf.option = {
+    token_object: {
+      access_token: '<access_token>',
+    },
+    scope: 'profile trade withdrawal reports push settings'
+  }
+end
+
+puts StocksExchangeApiClient::PrivateApiV3.profile_info
+```
+
 ## Lists Methods
 - [Sandbox API V3](https://apidocs.stex.com).
 ```

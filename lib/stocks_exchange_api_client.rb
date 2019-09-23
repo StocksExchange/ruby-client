@@ -115,31 +115,36 @@ module StocksExchangeApiClient
     end
 
     def get_token
-      if File.exist?(JSON_SETTINGS)
-        current_token = JSON.parse(File.read(JSON_SETTINGS))
-      else
-        current_token = {'access_token' => configuration.option[:token_object][:access_token],
-                         'refresh_token' => configuration.option[:token_object][:refresh_token],
-                         'expires_in' => nil,
-                         'expires_in_date' => nil}
+      if !configuration.s2s
+        if File.exist?(JSON_SETTINGS)
+                current_token = JSON.parse(File.read(JSON_SETTINGS))
+              else
+                current_token = {'access_token' => configuration.option[:token_object][:access_token],
+                                 'refresh_token' => configuration.option[:token_object][:refresh_token],
+                                 'expires_in' => nil,
+                                 'expires_in_date' => nil}
+              end
+              if !current_token.nil? && !current_token['expires_in_date'].nil?
+                return current_token['access_token'] if DateTime.parse(current_token['expires_in_date']).to_datetime > DateTime.now.to_datetime
+              end
+              begin
+                response = HTTParty.post(configuration.option[:access_token_url], body: {
+                    grant_type: 'refresh_token',
+                    refresh_token: current_token['refresh_token'],
+                    client_id: configuration.option[:client_id],
+                    client_secret: configuration.option[:client_secret],
+                    scope: configuration.option[:scope]
+                }).body
+                current_token = JSON.parse(response)
+                current_token['expires_in_date'] = Time.at(Time.now.to_i + current_token['expires_in']).to_s
+                File.write(JSON_SETTINGS, current_token.to_json)
+                current_token['access_token']
+              rescue StandardError => e
+                puts "Rescued: #{e.inspect}"
+              end
       end
-      if !current_token.nil? && !current_token['expires_in_date'].nil?
-        return current_token['access_token'] if DateTime.parse(current_token['expires_in_date']).to_datetime > DateTime.now.to_datetime
-      end
-      begin
-        response = HTTParty.post(configuration.option[:access_token_url], body: {
-            grant_type: 'refresh_token',
-            refresh_token: current_token['refresh_token'],
-            client_id: configuration.option[:client_id],
-            client_secret: configuration.option[:client_secret],
-            scope: configuration.option[:scope]
-        }).body
-        current_token = JSON.parse(response)
-        current_token['expires_in_date'] = Time.at(Time.now.to_i + current_token['expires_in']).to_s
-        File.write(JSON_SETTINGS, current_token.to_json)
-        current_token['access_token']
-      rescue StandardError => e
-        puts "Rescued: #{e.inspect}"
+      if configuration.s2s
+        configuration.option[:token_object][:access_token]
       end
     end
 
