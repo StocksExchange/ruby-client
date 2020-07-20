@@ -7,14 +7,10 @@ require 'date'
 # Version
 require 'stocks_exchange_api_client/version'
 
-# Private API V2 method
-require 'stocks_exchange_api_client/private'
-# Private API V3 method
+# Private API method
 require 'stocks_exchange_api_client/private_v3'
 
-# Public API V2 method
-require 'stocks_exchange_api_client/public'
-# Private API V3 method
+# Private API method
 require 'stocks_exchange_api_client/public_v3'
 
 # Configuration
@@ -42,27 +38,6 @@ module StocksExchangeApiClient
   class << self
     def configure
       yield(configuration)
-    end
-
-    def make_api_request(method = :post, params = {}, type)
-      configuration.validate!
-      if method == :post
-        params[:method] = type
-        params[:nonce] = Time.now.to_i
-        encode_www_form = URI.encode_www_form(params)
-        sign = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new(HEX_ALGORITHM), configuration.option[:api_secret], encode_www_form)
-        response = JSON.parse(
-            HTTParty.post(configuration.url, body: params, headers: {
-                Sign: sign,
-                Key: configuration.option[:api_key]
-            }).body
-        )
-        response = OpenStruct.new(response)
-      end
-      if method == :get
-        response = JSON.parse(HTTParty.get("#{configuration.url}/#{type}").body)
-      end
-      response
     end
 
     def make_api_request_v3(url, params = {}, method = :get, _type = :url, auth = true)
